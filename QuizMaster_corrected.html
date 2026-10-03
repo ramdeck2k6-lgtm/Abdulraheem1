@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>QuizMaster - Multiplayer Style Quiz</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Arial, Helvetica, sans-serif;
+    background:linear-gradient(135deg,#141e30,#243b55);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:#fff;
+}
+
+.container{
+    width:95%;
+    max-width:850px;
+}
+
+.card{
+    background:#ffffff;
+    color:#222;
+    border-radius:20px;
+    padding:30px;
+    box-shadow:0 15px 40px rgba(0,0,0,.35);
+}
+
+.screen{
+    display:none;
+}
+
+.screen.active{
+    display:block;
+}
+
+h1{
+    text-align:center;
+    color:#243b55;
+    margin-bottom:15px;
+}
+
+h2{
+    margin-bottom:15px;
+}
+
+.subtitle{
+    text-align:center;
+    color:#666;
+    margin-bottom:25px;
+}
+
+input{
+    width:100%;
+    padding:14px;
+    border:2px solid #ddd;
+    border-radius:10px;
+    font-size:16px;
+    margin-bottom:15px;
+}
+
+button{
+    border:none;
+    border-radius:10px;
+    padding:13px 18px;
+    font-size:16px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+button:hover{
+    transform:translateY(-2px);
+}
+
+.primary{
+    width:100%;
+    background:#3498db;
+    color:white;
+}
+
+.primary:hover{
+    background:#2980b9;
+}
+
+/* GAME HEADER */
+
+.game-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    margin-bottom:15px;
+}
+
+.player-name{
+    font-weight:bold;
+    color:#243b55;
+}
+
+.score{
+    background:#3498db;
+    color:#fff;
+    padding:8px 15px;
+    border-radius:20px;
+    font-weight:bold;
+}
+
+.timer{
+    background:#e74c3c;
+    color:#fff;
+    padding:8px 15px;
+    border-radius:20px;
+    font-weight:bold;
+}
+
+/* PROGRESS */
+
+.progress-container{
+    width:100%;
+    height:10px;
+    background:#ddd;
+    border-radius:10px;
+    margin:15px 0 25px;
+    overflow:hidden;
+}
+
+.progress-bar{
+    height:100%;
+    width:0%;
+    background:#2ecc71;
+    transition:.3s;
+}
+
+/* QUESTION */
+
+.question-number{
+    color:#777;
+    margin-bottom:10px;
+}
+
+.question{
+    font-size:23px;
+    font-weight:bold;
+    margin-bottom:20px;
+}
+
+/* ANSWERS */
+
+.answers{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+.answer{
+    background:#f4f6f8;
+    border:2px solid #ddd;
+    color:#222;
+    text-align:left;
+}
+
+.answer:hover{
+    background:#eaf2f8;
+}
+
+.answer.correct{
+    background:#2ecc71;
+    color:white;
+    border-color:#2ecc71;
+}
+
+.answer.wrong{
+    background:#e74c3c;
+    color:white;
+    border-color:#e74c3c;
+}
+
+.answer.disabled{
+    opacity:.3;
+    cursor:not-allowed;
+    text-decoration:line-through;
+}
+
+/* LIFELINES */
+
+.lifelines{
+    display:flex;
+    gap:10px;
+    margin:20px 0;
+    flex-wrap:wrap;
+}
+
+.lifeline{
+    flex:1;
+    min-width:150px;
+    background:#8e44ad;
+    color:white;
+}
+
+.lifeline:hover{
+    background:#71368a;
+}
+
+.lifeline:disabled{
+    background:#aaa;
+    cursor:not-allowed;
+    transform:none;
+}
+
+/* AUDIENCE */
+
+.audience-box{
+    display:none;
+    margin-top:20px;
+    padding:20px;
+    background:#f7f9fc;
+    border-radius:15px;
+    border:2px solid #ddd;
+}
+
+.audience-box h3{
+    color:#243b55;
+    margin-bottom:15px;
+}
+
+.bar-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:10px 0;
+}
+
+.option-label{
+    width:30px;
+    font-weight:bold;
+}
+
+.bar-container{
+    flex:1;
+    height:25px;
+    background:#ddd;
+    border-radius:8px;
+    overflow:hidden;
+}
+
+.bar{
+    height:100%;
+    width:0%;
+    background:#3498db;
+    transition:width 1s ease;
+}
+
+.percentage{
+    width:45px;
+    font-weight:bold;
+}
+.friend-box{
+    display:none;
+    margin-top:20px;
+    padding:20px;
+    background:#fff8e1;
+    border:2px solid #f1c40f;
+    border-radius:15px;
+    text-align:center;
+}
+
+.friend-box h3{
+    color:#8a6d00;
+    margin-bottom:15px;
+}
+
+.friend-avatar{
+    font-size:50px;
+    margin-bottom:10px;
+}
+
+#friendMessage{
+    font-size:18px;
+    line-height:1.6;
+    font-weight:bold;
+}
+/* NEXT BUTTON */
+
+.next-container{
+    text-align:right;
+    margin-top:20px;
+}
+
+#nextBtn{
+    display:none;
+    background:#27ae60;
+    color:#fff;
+}
+
+/* RESULT */
+
+.result{
+    text-align:center;
+}
+
+.result h2{
+    color:#243b55;
+}
+
+.final-score{
+    font-size:50px;
+    font-weight:bold;
+    color:#3498db;
+    margin:20px 0;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin:20px 0;
+}
+
+.stat{
+    background:#f4f6f8;
+    padding:15px;
+    border-radius:10px;
+}
+
+.stat strong{
+    display:block;
+    font-size:25px;
+    color:#3498db;
+}
+
+.leaderboard{
+    margin-top:25px;
+}
+
+.leaderboard table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+}
+
+.leaderboard th,
+.leaderboard td{
+    padding:10px;
+    border-bottom:1px solid #ddd;
+}
+
+.leaderboard th{
+    background:#243b55;
+    color:white;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:600px){
+
+    .card{
+        padding:20px;
+    }
+
+    .answers{
+        grid-template-columns:1fr;
+    }
+
+    .game-header{
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .stats{
+        grid-template-columns:1fr;
+    }
+
+    .question{
+        font-size:20px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card">
+
+<!-- START SCREEN -->
+
+<div id="startScreen" class="screen active">
+
+<h1>🎯 QuizMaster</h1>
+
+<p class="subtitle">
+Test your knowledge and become the QuizMaster!
+</p>
+
+<input
+    type="text"
+    id="playerName"
+    placeholder="Enter your name"
+>
+
+<button class="primary" onclick="startGame()">
+Start Quiz
+</button>
+
+</div>
+
+
+<!-- QUIZ SCREEN -->
+
+<div id="quizScreen" class="screen">
+
+<div class="game-header">
+
+<div class="player-name">
+Player: <span id="displayName"></span>
+</div>
+
+<div class="score">
+Score: <span id="score">0</span>
+</div>
+
+<div class="timer">
+⏱ <span id="timer">15</span>s
+</div>
+
+</div>
+
+
+<div class="progress-container">
+<div class="progress-bar" id="progressBar"></div>
+</div>
+
+
+<div class="question-number">
+Question <span id="questionNumber">1</span> of
+<span id="totalQuestions">10</span>
+</div>
+
+
+<div class="question" id="question">
+Question goes here
+</div>
+
+
+<!-- LIFELINES -->
+
+<div class="lifelines">
+
+<button
+    class="lifeline"
+    id="fiftyBtn"
+    onclick="useFiftyFifty()">
+    🌓 50/50
+</button>
+
+<button
+    class="lifeline"
+    id="audienceBtn"
+    onclick="askAudience()">
+    👥 Ask the Audience
+</button>
+
+<button
+    class="lifeline"
+    id="friendBtn"
+    onclick="phoneFriend()">
+    📞 Phone a Friend
+</button>
+
+</div>
+
+<!-- =====================================
+     PHONE A FRIEND BOX
+===================================== -->
+
+<div
+    class="friend-box"
+    id="friendBox">
+
+<h3>
+📞 Phone a Friend
+</h3>
+
+<div class="friend-avatar">
+👨‍💻
+</div>
+
+<p id="friendMessage">
+Your friend is thinking...
+</p>
+
+</div>
+
+
+
+<!-- ANSWERS -->
+
+<div class="answers" id="answers"></div>
+
+
+<!-- AUDIENCE RESULTS -->
+
+<div class="audience-box" id="audienceBox">
+
+<h3>👥 Audience Poll</h3>
+
+<div class="bar-row">
+
+<div class="option-label">A</div>
+
+<div class="bar-container">
+<div class="bar" id="bar0"></div>
+</div>
+
+<div class="percentage" id="percent0">0%</div>
+
+</div>
+
+
+<div class="bar-row">
+
+<div class="option-label">B</div>
+
+<div class="bar-container">
+<div class="bar" id="bar1"></div>
+</div>
+
+<div class="percentage" id="percent1">0%</div>
+
+</div>
+
+
+<div class="bar-row">
+
+<div class="option-label">C</div>
+
+<div class="bar-container">
+<div class="bar" id="bar2"></div>
+</div>
+
+<div class="percentage" id="percent2">0%</div>
+
+</div>
+
+
+<div class="bar-row">
+
+<div class="option-label">D</div>
+
+<div class="bar-container">
+<div class="bar" id="bar3"></div>
+</div>
+
+<div class="percentage" id="percent3">0%</div>
+
+</div>
+
+</div>
+
+
+<div class="next-container">
+
+<button id="nextBtn" onclick="nextQuestion()">
+Next Question →
+</button>
+
+</div>
+
+</div>
+
+
+<!-- RESULT SCREEN -->
+
+<div id="resultScreen" class="screen result">
+
+<h1>🏆 Quiz Complete!</h1>
+
+<p>Well done, <strong id="resultName"></strong>!</p>
+
+<div class="final-score">
+<span id="finalScore">0</span>
+</div>
+
+<p>Final Score</p>
+
+
+<div class="stats">
+
+<div class="stat">
+<strong id="correctCount">0</strong>
+Correct
+</div>
+
+<div class="stat">
+<strong id="wrongCount">0</strong>
+Wrong
+</div>
+
+<div class="stat">
+<strong id="bestStreak">0</strong>
+Best Streak
+</div>
+
+</div>
+
+
+<button
+    class="primary"
+    onclick="restartGame()">
+    🔄 Play Again
+</button>
+
+
+<div class="leaderboard">
+
+<h2>🏆 Leaderboard</h2>
+
+<table>
+
+<thead>
+
+<tr>
+<th>#</th>
+<th>Player</th>
+<th>Score</th>
+</tr>
+
+</thead>
+
+<tbody id="leaderboardBody"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+
+<script>
+
+/* =========================================
+   QUESTION DATABASE
+========================================= */
+
+const questions = [
+
+{
+question:"who is the best footballer?",
+answers:["raphinha","lamine yamal","ronaldo","messi"],
+correct:2
+},
+
+{
+question:"what is the fastest animal on land?",
+answers:["yak","crocodile","falcon","cheetah"],
+correct:3
+},
+
+{
+question:"what is the color of stadium ?",
+answers:["white","red","green","black"],
+correct:2
+},
+
+{
+question:"?",
+answers:["football is small","football is fat","football is played on the field","poopoo"],
+correct:2
+},
+
+{
+question:"What does CSS stand for?",
+answers:[
+"Computer Style Sheets",
+"Cascading Style Sheets",
+"Creative Style System",
+"Colorful Style Sheets"
+],
+correct:1
+},
+
+{
+question:"Which symbol is used for comments in JavaScript?",
+answers:["<!-- -->","//","#","**"],
+correct:1
+},
+
+{
+question:"Which method converts JSON text into a JavaScript object?",
+answers:[
+"JSON.parse()",
+"JSON.convert()",
+"JSON.object()",
+"JSON.read()"
+],
+correct:0
+},
+
+{
+question:"Which storage method saves data in the browser?",
+answers:[
+"browserStorage",
+"localStorage",
+"webStorageFile",
+"saveStorage"
+],
+correct:1
+},
+
+{
+question:"Which event occurs when a user clicks a button?",
+answers:[
+"onpress",
+"onclick",
+"onbutton",
+"clicking"
+],
+correct:1
+},
+
+{
+question:"8*8?",
+answers:[
+"1",
+"21",
+"91",
+"64"
+],
+correct:3
+},
+
+{
+question:"Which HTML tag is used to define an internal style sheet?",
+answers:[
+"<script>",
+"<css>",
+"<style>",
+"<link>"
+],
+correct:2
+},
+
+{
+question:"What is the capital city of France?",
+answers:[
+"Berlin",
+"Madrid",
+"Rome",
+"Paris"
+],
+correct:3
+},
+
+{
+question:"Which planet is known as the Red Planet?",
+answers:[
+"Venus",
+"Mars",
+"Jupiter",
+"Saturn"
+],
+correct:1
+},
+
+{
+question:"Which keyword is used to declare a constant variable in JavaScript?",
+answers:[
+"var",
+"let",
+"const",
+"static"
+],
+correct:2
+},
+
+{
+question:"How many players are on the field for one team in a standard football (soccer) match?",
+answers:[
+"11",
+"10",
+"9",
+"12"
+],
+correct:0
+},
+
+{
+question:"What does HTML stand for?",
+answers:[
+"Hyper Text Markup Language",
+"High Text Machine Language",
+"Hyperlink Text Management Language",
+"Home Tool Markup Language"
+],
+correct:0
+},
+
+{
+question:"What is the largest ocean on Earth?",
+answers:[
+"Atlantic Ocean",
+"Indian Ocean",
+"Arctic Ocean",
+"Pacific Ocean"
+],
+correct:3
+},
+
+{
+question:"Which array method adds one or more elements to the end of an array in JavaScript?",
+answers:[
+"pop()",
+"push()",
+"shift()",
+"unshift()"
+],
+correct:1
+},
+
+{
+question:"What is 12 multiplied by 12?",
+answers:[
+"124",
+"144",
+"164",
+"100"
+],
+correct:1
+},
+
+{
+question:"Which chemical element has the symbol 'O'?",
+answers:[
+"Gold",
+"Silver",
+"Oxygen",
+"Hydrogen"
+],
+correct:2
+}
+
+];
+/* =========================================
+   GAME VARIABLES
+========================================= */
+
+let currentQuestion = 0;
+
+let score = 0;
+
+let correctCount = 0;
+
+let wrongCount = 0;
+
+let streak = 0;
+
+let bestStreak = 0;
+
+let timeLeft = 30;
+
+let timerInterval = null;
+
+let answered = false;
+
+let player = "";
+
+
+/* LIFELINE VARIABLES */
+
+let fiftyUsed = false;
+
+let audienceUsed = false;
+let friendUsed = false;
+
+
+/* =========================================
+   START GAME
+========================================= */
+
+function startGame(){
+
+    const nameInput =
+        document.getElementById("playerName");
+
+    player =
+        nameInput.value.trim() || "Player";
+
+    document.getElementById("displayName").textContent =
+        player;
+
+    document.getElementById("totalQuestions").textContent =
+        questions.length;
+
+    document.getElementById("startScreen")
+        .classList.remove("active");
+
+       
+    document.getElementById("quizScreen")
+        .classList.add("active");
+
+    currentQuestion = 0;
+
+    score = 0;
+
+    correctCount = 0;
+
+
+    wrongCount = 0;
+
+    streak = 0;
+
+    bestStreak = 0;
+
+    fiftyUsed = false;
+
+    audienceUsed = false;
+
+    document.getElementById("fiftyBtn").disabled = false;
+
+    document.getElementById("audienceBtn").disabled = false;
+
+    loadQuestion();
+}
+
+
+/* =========================================
+   LOAD QUESTION
+========================================= */
+
+function loadQuestion(){
+
+    answered = false;
+
+    clearInterval(timerInterval);
+
+    timeLeft = 15;
+
+    document.getElementById("timer").textContent =
+        timeLeft;
+
+    document.getElementById("questionNumber").textContent =
+        currentQuestion + 1;
+
+    document.getElementById("question").textContent =
+        questions[currentQuestion].question;
+
+    document.getElementById("score").textContent =
+        score;
+
+
+    /* Progress bar */
+
+    const progress =
+        ((currentQuestion + 1) / questions.length) * 100;
+
+    document.getElementById("progressBar").style.width =
+        progress + "%";
+
+
+    /* Reset next button */
+
+    document.getElementById("nextBtn").style.display =
+        "none";
+
+
+    /* Hide audience and phone-a-friend results */
+
+    document.getElementById("audienceBox").style.display =
+        "none";
+
+    document.getElementById("friendBox").style.display =
+        "none";
+
+    document.getElementById("friendMessage").textContent =
+        "Your friend is thinking...";
+
+
+    /* Create answers */
+
+    const answersContainer =
+        document.getElementById("answers");
+
+    answersContainer.innerHTML = "";
+
+
+    questions[currentQuestion].answers.forEach(
+        (answer,index)=>{
+
+            const button =
+                document.createElement("button");
+
+            button.className = "answer";
+
+            button.textContent =
+                `${String.fromCharCode(65+index)}. ${answer}`;
+
+            button.onclick =
+                ()=>selectAnswer(index,button);
+
+            answersContainer.appendChild(button);
+
+        }
+    );
+
+
+    startTimer();
+
+}
+
+
+/* =========================================
+   TIMER
+========================================= */
+
+function startTimer(){
+
+    timerInterval =
+        setInterval(()=>{
+
+            timeLeft--;
+
+            document.getElementById("timer").textContent =
+                timeLeft;
+
+
+            if(timeLeft <= 0){
+
+                clearInterval(timerInterval);
+
+                timeOut();
+
+            }
+
+        },1000);
+
+}
+
+
+/* =========================================
+   SELECT ANSWER
+========================================= */
+
+function selectAnswer(selectedIndex,selectedButton){
+
+    if(answered)
+        return;
+
+    answered = true;
+
+    clearInterval(timerInterval);
+
+
+    const question =
+        questions[currentQuestion];
+
+
+    const answerButtons =
+        document.querySelectorAll(".answer");
+
+
+    /* Disable all answers */
+    answerButtons.forEach(button=>{
+        button.disabled = true;
+    });
+
+
+    if(selectedIndex === question.correct){
+
+        selectedButton.classList.add("correct");
+
+        correctCount++;
+
+        streak++;
+
+        if(streak > bestStreak)
+            bestStreak = streak;
+
+
+        const points =
+            100 +
+            (timeLeft * 10) +
+            (streak * 25);
+
+        score += points;
+
+
+        document.getElementById("score").textContent =
+            score;
+
+    }
+
+    else{
+
+        selectedButton.classList.add("wrong");
+
+        answerButtons[
+            question.correct
+        ].classList.add("correct");
+
+        wrongCount++;
+
+        streak = 0;
+
+    }
+
+
+    document.getElementById("nextBtn").style.display =
+        "inline-block";
+
+}
+
+
+/* =========================================
+   TIME OUT
+========================================= */
+
+function timeOut(){
+
+    if(answered)
+        return;
+
+    answered = true;
+
+    const question =
+        questions[currentQuestion];
+
+    const answerButtons =
+        document.querySelectorAll(".answer");
+
+
+    answerButtons.forEach(button=>{
+        button.disabled = true;
+    });
+
+
+    answerButtons[
+        question.correct
+    ].classList.add("correct");
+
+
+    wrongCount++;
+
+    streak = 0;
+
+
+    document.getElementById("nextBtn").style.display =
+        "inline-block";
+
+}
+
+
+/* =========================================
+   50 / 50 LIFELINE
+========================================= */
+
+function useFiftyFifty(){
+
+    if(fiftyUsed || answered)
+        return;
+
+
+    fiftyUsed = true;
+
+
+    document.getElementById("fiftyBtn").disabled =
+        true;
+
+
+    const question =
+        questions[currentQuestion];
+
+
+    const answerButtons =
+        document.querySelectorAll(".answer");
+
+
+    let incorrectIndexes = [];
+
+
+    /* Find all incorrect answers */
+
+    for(let i=0;i<question.answers.length;i++){
+
+        if(i !== question.correct){
+
+            incorrectIndexes.push(i);
+
+        }
+
+    }
+
+
+    /* Shuffle incorrect answers */
+
+    incorrectIndexes.sort(
+        ()=>Math.random() - 0.5
+    );
+
+
+    /* Remove two incorrect answers */
+
+    const removeIndexes =
+        incorrectIndexes.slice(0,2);
+
+
+    removeIndexes.forEach(index=>{
+
+        answerButtons[index].disabled = true;
+
+        answerButtons[index].classList.add("disabled");
+
+        answerButtons[index].textContent =
+            "❌ Removed";
+
+    });
+
+}
+
+
+/* =========================================
+   ASK THE AUDIENCE
+========================================= */
+
+function askAudience(){
+
+    if(audienceUsed || answered)
+        return;
+
+
+    audienceUsed = true;
+
+
+    document.getElementById("audienceBtn").disabled =
+        true;
+
+
+    const question =
+        questions[currentQuestion];
+
+
+    const correct =
+        question.correct;
+
+
+    /*
+       Generate audience percentages.
+
+       Correct answer gets a strong probability.
+    */
+
+    let percentages =
+        [0,0,0,0];
+
+
+    let remaining = 100;
+
+
+    /*
+       Give correct answer between
+       45% and 75%.
+    */
+
+    const correctPercentage =
+        Math.floor(
+            Math.random() * 31
+        ) + 45;
+
+
+    percentages[correct] =
+        correctPercentage;
+
+
+    remaining -= correctPercentage;
+
+
+    /*
+       Distribute remaining percentage
+       among incorrect answers.
+    */
+
+    let incorrectIndexes = [];
+
+
+    for(let i=0;i<4;i++){
+
+        if(i !== correct){
+
+            incorrectIndexes.push(i);
+
+        }
+
+    }
+
+
+    for(let i=0;i<incorrectIndexes.length;i++){
+
+        const index =
+            incorrectIndexes[i];
+
+
+        if(i === incorrectIndexes.length - 1){
+
+            percentages[index] =
+                remaining;
+
+        }
+
+        else{
+
+            const value =
+                Math.floor(
+                    Math.random() *
+                    (remaining + 1)
+                );
+
+            percentages[index] =
+                value;
+
+            remaining -= value;
+
+        }
+
+    }
+
+
+    /*
+       Shuffle slightly if necessary
+       while keeping the correct answer
+       as the audience favorite.
+    */
+
+    displayAudience(percentages);
+
+}
+
+
+/* =========================================
+   DISPLAY AUDIENCE RESULTS
+========================================= */
+
+function displayAudience(percentages){
+
+    const audienceBox =
+        document.getElementById("audienceBox");
+
+    audienceBox.style.display =
+        "block";
+
+
+    for(let i=0;i<4;i++){
+
+        document.getElementById(
+            "percent"+i
+        ).textContent =
+            percentages[i] + "%";
+
+
+        setTimeout(()=>{
+
+            document.getElementById(
+                "bar"+i
+            ).style.width =
+                percentages[i] + "%";
+
+        },100);
+
+    }
+
+}
+
+
+/* =========================================
+   PHONE A FRIEND
+========================================= */
+
+function phoneFriend(){
+
+    if(friendUsed || answered)
+        return;
+
+    friendUsed = true;
+
+    document.getElementById("friendBtn").disabled = true;
+
+    const question = questions[currentQuestion];
+    const friendBox = document.getElementById("friendBox");
+    const friendMessage = document.getElementById("friendMessage");
+
+    const correctAnswer = question.answers[question.correct];
+
+    friendMessage.textContent =
+        `I think the answer is "${correctAnswer}". I'm fairly confident!`;
+
+    friendBox.style.display = "block";
+}
+
+
+/* =========================================
+   NEXT QUESTION
+========================================= */
+
+function nextQuestion(){
+
+    currentQuestion++;
+
+
+    if(currentQuestion >= questions.length){
+
+        finishGame();
+
+    }
+
+    else{
+
+        loadQuestion();
+
+    }
+
+}
+
+
+/* =========================================
+   FINISH GAME
+========================================= */
+
+function finishGame(){
+
+    clearInterval(timerInterval);
+
+
+    document.getElementById("quizScreen")
+        .classList.remove("active");
+
+    document.getElementById("resultScreen")
+        .classList.add("active");
+
+
+    document.getElementById("finalScore")
+        .textContent = score;
+
+    document.getElementById("resultName")
+        .textContent = player;
+
+    document.getElementById("correctCount")
+        .textContent = correctCount;
+
+    document.getElementById("wrongCount")
+        .textContent = wrongCount;
+
+    document.getElementById("bestStreak")
+        .textContent = bestStreak;
+
+
+    saveScore();
+
+    displayLeaderboard();
+
+}
+
+
+/* =========================================
+   SAVE LEADERBOARD
+========================================= */
+
+function saveScore(){
+
+    let leaderboard =
+        JSON.parse(
+            localStorage.getItem("quizLeaderboard")
+        ) || [];
+
+
+    leaderboard.push({
+
+        name:player,
+
+        score:score
+
+    });
+
+
+    leaderboard.sort(
+        (a,b)=>b.score-a.score
+    );
+
+
+    leaderboard =
+        leaderboard.slice(0,10);
+
+
+    localStorage.setItem(
+        "quizLeaderboard",
+        JSON.stringify(leaderboard)
+    );
+
+}
+
+
+/* =========================================
+   DISPLAY LEADERBOARD
+========================================= */
+
+function displayLeaderboard(){
+
+    const body =
+        document.getElementById("leaderboardBody");
+
+    body.innerHTML = "";
+
+
+    let leaderboard =
+        JSON.parse(
+            localStorage.getItem("quizLeaderboard")
+        ) || [];
+
+
+    leaderboard.forEach((item,index)=>{
+
+        const row =
+            document.createElement("tr");
+
+
+        row.innerHTML = `
+
+            <td>${index+1}</td>
+
+            <td>${escapeHTML(item.name)}</td>
+
+            <td>${item.score}</td>
+
+        `;
+
+
+        body.appendChild(row);
+
+    });
+
+}
+
+
+/* =========================================
+   ESCAPE HTML
+========================================= */
+
+function escapeHTML(text){
+
+    const div =
+        document.createElement("div");
+
+    div.textContent =
+        text;
+
+    return div.innerHTML;
+
+}
+
+
+/* =========================================
+   RESTART
+========================================= */
+
+function restartGame(){
+
+    document.getElementById("resultScreen")
+        .classList.remove("active");
+
+    document.getElementById("startScreen")
+        .classList.add("active");
+
+}
+
+
+/* =========================================
+   KEYBOARD SHORTCUTS
+========================================= */
+
+document.addEventListener(
+    "keydown",
+    function(event){
+
+        if(
+            document.getElementById("quizScreen")
+                .classList.contains("active")
+        ){
+
+            if(
+                event.key >= "1" &&
+                event.key <= "4"
+            ){
+
+                const index =
+                    parseInt(event.key) - 1;
+
+                const buttons =
+                    document.querySelectorAll(".answer");
+
+
+                if(
+                    buttons[index] &&
+                    !buttons[index].disabled
+                ){
+
+                    buttons[index].click();
+
+                }
+
+            }
+
+        }
+
+    }
+);
+
+</script>
+
+</body>
+</html>
